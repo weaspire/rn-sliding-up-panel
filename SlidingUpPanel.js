@@ -60,6 +60,7 @@ class SlidingUpPanel extends React.PureComponent {
     backdropStyle: ViewPropTypes.style,
     children: PropTypes.oneOfType([PropTypes.element, PropTypes.func]),
 
+    headerHeight: PropTypes.number,
     onShowKeyboard: PropTypes.func,
     onHideKeyboard: PropTypes.func,
   }
@@ -494,7 +495,10 @@ class SlidingUpPanel extends React.PureComponent {
     // Stop any animation when the keyboard starts showing
     this._flick.stop()
 
-    const {y} = await measureElement(node)
+    let {y} = await measureElement(node)
+    const maxY = usableHeight - this.props.headerHeight
+    y = y > maxY ? maxY : y
+
     const extraMargin = options.keyboardExtraMargin || Constants.KEYBOARD_EXTRA_MARGIN // prettier-ignore
     const keyboardActualPos = this._keyboardYPosition - extraMargin
 
