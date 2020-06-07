@@ -58,7 +58,10 @@ class SlidingUpPanel extends React.PureComponent {
     friction: PropTypes.number,
     containerStyle: ViewPropTypes.style,
     backdropStyle: ViewPropTypes.style,
-    children: PropTypes.oneOfType([PropTypes.element, PropTypes.func])
+    children: PropTypes.oneOfType([PropTypes.element, PropTypes.func]),
+
+    onShowKeyboard: PropTypes.func,
+    onHideKeyboard: PropTypes.func,
   }
 
   static defaultProps = {
@@ -309,32 +312,36 @@ class SlidingUpPanel extends React.PureComponent {
       return
     }
 
-    this._storeKeyboardPosition(event.endCoordinates.screenY)
+    this.props.onShowKeyboard(event, () => {
+      this._storeKeyboardPosition(event.endCoordinates.screenY)
 
-    const node = TextInput.State.currentlyFocusedField()
+      const node = TextInput.State.currentlyFocusedField()
 
-    if (node != null) {
-      UIManager.viewIsDescendantOf(node, findNodeHandle(this._content), (isDescendant) => {
-        isDescendant && this.scrollIntoView(node)
-      });
-    }
+      if (node != null) {
+        UIManager.viewIsDescendantOf(node, findNodeHandle(this._content), (isDescendant) => {
+          isDescendant && this.scrollIntoView(node)
+        });
+      }
+    })
   }
 
   _onKeyboardHiden() {
-    this._storeKeyboardPosition(0)
+    this.props.onHideKeyboard(() => {
+      this._storeKeyboardPosition(0)
 
-    const animatedValue = this.props.animatedValue.__getValue()
+      const animatedValue = this.props.animatedValue.__getValue()
 
-    // Restore last position
-    if (this._lastPosition != null && !this._isAtBottom(animatedValue)) {
-      Animated.timing(this.props.animatedValue, {
-        toValue: this._lastPosition,
-        duration: Constants.KEYBOARD_TRANSITION_DURATION,
-        useNativeDriver: true
-      }).start()
-    }
+      // Restore last position
+      if (this._lastPosition != null && !this._isAtBottom(animatedValue)) {
+        Animated.timing(this.props.animatedValue, {
+          toValue: this._lastPosition,
+          duration: Constants.KEYBOARD_TRANSITION_DURATION,
+          useNativeDriver: true
+        }).start()
+      }
 
-    this._lastPosition = null
+      this._lastPosition = null
+    })
   }
 
   _onBackButtonPress() {
